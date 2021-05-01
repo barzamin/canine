@@ -3,4 +3,6 @@
     <dimen name="key_borderRadius">6dp</dimen>
     <dimen name="key_textSize">18sp</dimen>
     <dimen name="key_textHintSize">10sp</dimen>
+    <dimen name="key_marginH">2dp</dimen>
+    <dimen name="key_marginV">5dp</dimen>
 </resources>

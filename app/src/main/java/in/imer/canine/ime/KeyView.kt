@@ -6,6 +6,7 @@ import android.graphics.*
 import android.graphics.drawable.PaintDrawable
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 
 class KeyView(context: Context, attrs: AttributeSet) : View(context, attrs) {
@@ -22,6 +23,88 @@ class KeyView(context: Context, attrs: AttributeSet) : View(context, attrs) {
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         outlineProvider = KeyViewOutline(w, h)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val keyMarginH = resources.getDimension(R.dimen.key_marginH);
+        val keyMarginV = resources.getDimension(R.dimen.key_marginV);
+
+        (layoutParams as ViewGroup.MarginLayoutParams).setMargins(
+            keyMarginH.toInt(),
+            keyMarginV.toInt(),
+            keyMarginH.toInt(),
+            keyMarginV.toInt()
+        )
+
+//        desiredWidth = (keyboardView.desiredKeyWidth * when (keyboardView.computedLayout?.mode) {
+//            KeyboardMode.NUMERIC,
+//            KeyboardMode.PHONE,
+//            KeyboardMode.PHONE2 -> 2.68f
+//            KeyboardMode.NUMERIC_ADVANCED -> when (data.code) {
+//                44, 46 -> 1.00f
+//                KeyCode.VIEW_SYMBOLS, 61 -> 1.34f
+//                else -> 1.56f
+//            }
+//            else -> when (data.code) {
+//                KeyCode.SHIFT,
+//                KeyCode.DELETE ->
+//                    if ((keyboardView.computedLayout?.arrangement?.get(2)?.size ?: 0) > 10) {
+//                        1.12f
+//                    } else {
+//                        1.56f
+//                    }
+//                KeyCode.VIEW_CHARACTERS,
+//                KeyCode.VIEW_SYMBOLS,
+//                KeyCode.VIEW_SYMBOLS2,
+//                KeyCode.ENTER -> 1.56f
+//                else -> 1.00f
+//            }
+//        }).toInt()
+
+        desiredHeight = keyboardView.desiredKeyHeight
+
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+        // Measure Width
+        val width = when (widthMode) {
+            MeasureSpec.EXACTLY -> {
+                // Must be this size
+                widthSize
+            }
+            MeasureSpec.AT_MOST -> {
+                // Can't be bigger than...
+                desiredWidth.coerceAtMost(widthSize)
+            }
+            else -> {
+                // Be whatever you want
+                desiredWidth
+            }
+        }
+
+        // Measure Height
+        val height = when (heightMode) {
+            MeasureSpec.EXACTLY -> {
+                // Must be this size
+                heightSize
+            }
+            MeasureSpec.AT_MOST -> {
+                // Can't be bigger than...
+                desiredHeight.coerceAtMost(heightSize)
+            }
+            else -> {
+                // Be whatever you want
+                desiredHeight
+            }
+        }
+
+        drawablePaddingH = (0.2f * width).toInt()
+        drawablePaddingV = (0.2f * height * (1.0f / (florisboard?.inputView?.heightFactor ?: 1.0f)).coerceAtMost(1.0f)).toInt()
+
+        // MUST CALL THIS
+        setMeasuredDimension(width, height)
     }
 
     /**
@@ -69,7 +152,7 @@ class KeyView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         typeface = Typeface.DEFAULT
     }
     private val subLabelPaint = Paint().apply {
-        color = Color.WHITE
+        color = labelPaint.color
         alpha = 120
         isAntiAlias = true
         isFakeBoldText = false
@@ -85,7 +168,7 @@ class KeyView(context: Context, attrs: AttributeSet) : View(context, attrs) {
         val subLabel = "dog"
 
         if (label != null) {
-            fitTextPaint(labelPaint, measuredWidth * 1.0f, measuredHeight * 1.0f, label, 1.0f)
+            fitTextPaint(labelPaint, measuredWidth * 1.0f, measuredHeight * 1.0f, label)
 
             val centerX = measuredWidth / 2.0f
             val centerY = measuredHeight / 2.0f + (labelPaint.textSize - labelPaint.descent()) / 2
